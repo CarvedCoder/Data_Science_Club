@@ -7,7 +7,7 @@ import { Button } from '../common/Button';
 import { attendance } from '../../services/api';
 
 export const ScanQR = () => {
-  const [token, setToken] = useState('');
+  const [qrPayload, setQrPayload] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
@@ -37,7 +37,7 @@ export const ScanQR = () => {
     setError('');
 
     try {
-      await attendance.mark(token);
+      await attendance.mark(qrPayload);
       setSuccess(true);
       setTimeout(() => navigate('/dashboard'), 2000);
     } catch (err) {
@@ -87,19 +87,19 @@ export const ScanQR = () => {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-2">
-                  Enter QR Code Token
+                  Enter QR Code Payload
                 </label>
                 <input
                   type="text"
-                  value={token}
-                  onChange={(e) => setToken(e.target.value)}
-                  placeholder="Paste token from QR code"
+                  value={qrPayload}
+                  onChange={(e) => setQrPayload(e.target.value)}
+                  placeholder="Paste the QR code content"
                   className="w-full px-4 py-3 rounded-lg glass border border-white/20 focus:border-indigo-500 outline-none transition-all"
                   required
                   disabled={!activeSession}
                 />
                 <p className="text-xs text-gray-400 mt-2">
-                  Scan the QR code displayed by your instructor and paste the token here
+                  Scan the QR code displayed by your instructor and paste the content here
                 </p>
               </div>
 

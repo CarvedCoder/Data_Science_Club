@@ -13,14 +13,43 @@ export const QRAttendance = () => {
   const [session, setSession] = useState(null);
   const [event, setEvent] = useState(null);
   const [attendanceData, setAttendanceData] = useState(null);
+  const [timeRemaining, setTimeRemaining] = useState(60);
 
   useEffect(() => {
     startSession();
-    const interval = setInterval(() => {
+    const attendanceInterval = setInterval(() => {
       loadAttendance();
     }, 5000);
-    return () => clearInterval(interval);
+    return () => clearInterval(attendanceInterval);
   }, []);
+
+  // QR refresh timer - refresh every 50 seconds (before 60s expiry)
+  useEffect(() => {
+    if (!session) return;
+    
+    // Countdown timer
+    const countdownInterval = setInterval(() => {
+      setTimeRemaining(prev => {
+        if (prev <= 1) {
+          refreshQR();
+          return 60;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    
+    return () => clearInterval(countdownInterval);
+  }, [session?.session_id]);
+
+  const refreshQR = async () => {
+    try {
+      const sessionRes = await attendance.refreshQR(session.session_id);
+      setSession(prev => ({ ...prev, qr_payload: sessionRes.data.qr_payload }));
+      setTimeRemaining(sessionRes.data.expires_in_seconds || 60);
+    } catch (error) {
+      console.error('Failed to refresh QR:', error);
+    }
+  };
 
   const startSession = async () => {
     try {
@@ -29,6 +58,7 @@ export const QRAttendance = () => {
       
       const sessionRes = await attendance.startSession(parseInt(eventId));
       setSession(sessionRes.data);
+      setTimeRemaining(sessionRes.data.expires_in_seconds || 60);
       await loadAttendance();
     } catch (error) {
       console.error('Failed to start session:', error);
@@ -75,9 +105,12 @@ export const QRAttendance = () => {
             transition={{ duration: 2, repeat: Infinity }}
             className="bg-white p-8 rounded-2xl mb-6"
           >
-            <QRCode value={session.token} size={300} />
+            <QRCode value={session.qr_payload} size={300} />
           </motion.div>
           <p className="text-gray-400 mb-4">Scan to mark attendance</p>
+          <p className={`text-sm mb-4 font-mono ${timeRemaining <= 10 ? 'text-red-400' : 'text-yellow-400'}`}>
+            QR expires in {timeRemaining}s
+          </p>
           <Button variant="danger" onClick={handleStop}>
             <X className="mr-2" size={20} />
             Stop Session

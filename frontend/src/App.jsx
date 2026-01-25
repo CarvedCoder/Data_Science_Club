@@ -6,6 +6,10 @@ import { Login } from './components/auth/Login';
 import { Signup } from './components/auth/Signup';
 import { Dashboard as MemberDashboard } from './components/member/Dashboard';
 import { Calendar } from './components/member/Calendar';
+import { EventCalendar } from './components/member/EventCalendar';
+import { Profile } from './components/member/Profile';
+import { AttendanceHistory } from './components/member/AttendanceHistory';
+import { Resources } from './components/member/Resources';
 import { ScanQR } from './components/member/ScanQR';
 import { AdminDashboard } from './components/admin/Dashboard';
 import { PendingRequests } from './components/admin/PendingRequests';
@@ -14,7 +18,7 @@ import { EventManagement } from './components/admin/EventManagement';
 import { QRAttendance } from './components/admin/QRAttendance';
 
 const PrivateRoute = ({ children, requiredRole }) => {
-  const { user, loading } = useAuth();
+  const { user, loading, approvalStatus } = useAuth();
 
   if (loading) return (
     <div className="flex items-center justify-center h-screen">
@@ -26,34 +30,15 @@ const PrivateRoute = ({ children, requiredRole }) => {
   );
   
   if (!user) return <Navigate to="/login" />;
-  if (requiredRole && user.role !== requiredRole) return <Navigate to="/login" />;
-  if (user.role === 'pending') return (
-    <div className="flex items-center justify-center h-screen text-center p-8">
-      <div className="max-w-md">
-        <div className="mb-6 text-yellow-400">
-          <svg className="w-24 h-24 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-        </div>
-        <h2 className="text-3xl font-bold mb-4">Account Pending Approval</h2>
-        <p className="text-gray-400 mb-4">
-          Your account is awaiting admin approval. You'll receive access once an administrator reviews your request.
-        </p>
-        <p className="text-sm text-gray-500">
-          This usually takes 24-48 hours. Thank you for your patience!
-        </p>
-        <button
-          onClick={() => {
-            localStorage.removeItem('token');
-            window.location.href = '/login';
-          }}
-          className="mt-6 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all"
-        >
-          Back to Login
-        </button>
-      </div>
-    </div>
-  );
+  
+  // Normalize role comparison (backend uses ADMIN/STUDENT, frontend uses admin/student)
+  const userRole = user.role?.toLowerCase();
+  const required = requiredRole?.toLowerCase();
+  
+  // Map 'student' to 'member' for route matching
+  const effectiveRole = userRole === 'student' ? 'member' : userRole;
+  
+  if (required && effectiveRole !== required) return <Navigate to="/login" />;
 
   return (
     <div className="flex h-screen">
@@ -73,11 +58,11 @@ function App() {
           
           {/* Member Routes */}
           <Route path="/dashboard" element={<PrivateRoute requiredRole="member"><MemberDashboard /></PrivateRoute>} />
-          <Route path="/calendar" element={<PrivateRoute requiredRole="member"><Calendar /></PrivateRoute>} />
+          <Route path="/calendar" element={<PrivateRoute requiredRole="member"><EventCalendar /></PrivateRoute>} />
           <Route path="/scan-qr" element={<PrivateRoute requiredRole="member"><ScanQR /></PrivateRoute>} />
-          <Route path="/attendance" element={<PrivateRoute requiredRole="member"><div className="p-8">Attendance History (Coming Soon)</div></PrivateRoute>} />
-          <Route path="/resources" element={<PrivateRoute requiredRole="member"><div className="p-8">Resources (Coming Soon)</div></PrivateRoute>} />
-          <Route path="/profile" element={<PrivateRoute requiredRole="member"><div className="p-8">Profile (Coming Soon)</div></PrivateRoute>} />
+          <Route path="/attendance" element={<PrivateRoute requiredRole="member"><AttendanceHistory /></PrivateRoute>} />
+          <Route path="/resources" element={<PrivateRoute requiredRole="member"><Resources /></PrivateRoute>} />
+          <Route path="/profile" element={<PrivateRoute requiredRole="member"><Profile /></PrivateRoute>} />
           
           {/* Admin Routes */}
           <Route path="/admin" element={<PrivateRoute requiredRole="admin"><AdminDashboard /></PrivateRoute>} />
