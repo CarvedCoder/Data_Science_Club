@@ -9,7 +9,7 @@ from .models.user import User, UserRole
 from .utils.security import get_password_hash
 from .config import get_settings
 
-from .routes import auth, events, attendance, admin, resources
+from .routes import auth, events, attendance, admin, resources, member
 
 app = FastAPI(title="DS Club Portal")
 
@@ -32,6 +32,7 @@ app.include_router(events.router)
 app.include_router(attendance.router)
 app.include_router(admin.router)
 app.include_router(resources.router)
+app.include_router(member.router)
 
 @app.on_event("startup")
 def startup_event():

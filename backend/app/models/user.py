@@ -1,5 +1,5 @@
 
-from sqlalchemy import Column, String, Boolean, DateTime, Enum, Index, CheckConstraint
+from sqlalchemy import Column, String, Boolean, DateTime, Enum, Index, CheckConstraint, Text
 from sqlalchemy.orm import relationship
 from datetime import datetime
 import enum
@@ -22,6 +22,22 @@ class User(Base):
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
     last_login_at = Column(DateTime, nullable=True)
+    
+    # Profile fields
+    section = Column(String(50), nullable=True)
+    branch = Column(String(100), nullable=True)
+    year = Column(String(20), nullable=True)
+    bio = Column(Text, nullable=True)
+    skills = Column(Text, nullable=True)  # Stored as comma-separated values
+    
+    # Alias for name (backwards compatibility)
+    @property
+    def name(self):
+        return self.full_name
+    
+    @name.setter
+    def name(self, value):
+        self.full_name = value
     
     # Relationships
     attendance_records = relationship("AttendanceRecord", back_populates="user", foreign_keys="AttendanceRecord.user_id")

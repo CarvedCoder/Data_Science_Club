@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import Optional
@@ -21,10 +21,10 @@ class MaterialCreate(BaseModel):
 
 @router.post("/upload")
 async def upload_material(
-    title: str,
     file: UploadFile = File(...),
-    description: Optional[str] = None,
-    event_id: Optional[int] = None,
+    title: str = Form(...),
+    description: Optional[str] = Form(None),
+    event_id: Optional[str] = Form(None),
     db: Session = Depends(get_db),
     current_user: User = Depends(require_admin)
 ):
@@ -36,10 +36,11 @@ async def upload_material(
     # Create database entry
     material = StudyMaterial(
         title=title,
-        filename=file.filename,
+        file_name=file.filename,
         file_path=file_path,
         description=description,
-        event_id=event_id
+        event_id=event_id,
+        uploaded_by=current_user.id
     )
     db.add(material)
     db.commit()
@@ -49,7 +50,7 @@ async def upload_material(
 
 @router.get("/")
 def get_materials(
-    event_id: Optional[int] = None,
+    event_id: Optional[str] = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
@@ -62,7 +63,7 @@ def get_materials(
 
 @router.delete("/{material_id}")
 def delete_material(
-    material_id: int,
+    material_id: str,
     db: Session = Depends(get_db),
     current_user: User = Depends(require_admin)
 ):
