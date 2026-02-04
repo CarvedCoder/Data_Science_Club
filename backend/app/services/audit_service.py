@@ -4,6 +4,16 @@ from sqlalchemy.orm import Session
 from fastapi import Request
 from ..models.audit_log import AuditLog
 
+def serialize_for_json(obj):
+    """Convert UUIDs and other non-serializable objects to strings."""
+    if isinstance(obj, dict):
+        return {k: serialize_for_json(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [serialize_for_json(v) for v in obj]
+    elif hasattr(obj, 'hex'):  # UUID objects have a hex attribute
+        return str(obj)
+    return obj
+
 class AuditService:
     """Service for logging all critical operations for security and compliance."""
     
@@ -38,11 +48,11 @@ class AuditService:
                 user_agent = request.headers.get('user-agent')
             
             audit_log = AuditLog(
-                user_id=user_id,
+                user_id=str(user_id) if user_id else None,
                 action=action,
                 resource_type=resource_type,
-                resource_id=resource_id,
-                meta_data=json.dumps(metadata) if metadata else None,
+                resource_id=str(resource_id) if resource_id else None,
+                meta_data=json.dumps(serialize_for_json(metadata)) if metadata else None,
                 ip_address=ip_address,
                 user_agent=user_agent,
                 created_at=datetime.utcnow()

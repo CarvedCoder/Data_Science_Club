@@ -4,6 +4,16 @@ from sqlalchemy.orm import Session
 from ..models.notification import Notification
 from ..models.user import User, UserRole
 
+def serialize_for_json(obj):
+    """Convert UUIDs and other non-serializable objects to strings."""
+    if isinstance(obj, dict):
+        return {k: serialize_for_json(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [serialize_for_json(v) for v in obj]
+    elif hasattr(obj, 'hex'):  # UUID objects have a hex attribute
+        return str(obj)
+    return obj
+
 class NotificationService:
     """Service for creating and managing real-time notifications."""
     
@@ -18,11 +28,11 @@ class NotificationService:
     ) -> Notification:
         """Create a new notification."""
         notification = Notification(
-            recipient_id=recipient_id,
+            recipient_id=str(recipient_id),  # Ensure UUID is string
             type=type,
             title=title,
             message=message,
-            notification_data=json.dumps(data) if data else None,
+            notification_data=json.dumps(serialize_for_json(data)) if data else None,
             is_read=False,
             created_at=datetime.utcnow()
         )
