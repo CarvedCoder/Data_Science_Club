@@ -123,10 +123,10 @@ def decide_approval(
         approval_req.status = ApprovalStatus.APPROVED
         approval_req.decided_at = datetime.utcnow()
         approval_req.decided_by = current_user.id
-        approval_req.approved_role = decision.approved_role.upper()  # Convert to uppercase for database
+        approval_req.approved_role = decision.approved_role  # Already lowercase
         
         # Activate user
-        user.role = UserRole.STUDENT if decision.approved_role == 'student' else UserRole.ADMIN
+        user.role = decision.approved_role  # Use string directly ('student' or 'admin')
         user.is_active = True
         
         db.commit()
@@ -256,7 +256,7 @@ def remove_member(
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     
-    if user.role == UserRole.ADMIN:
+    if user.role == UserRole.ADMIN.value:
         raise HTTPException(status_code=403, detail="Cannot remove admin users")
     
     # Soft delete
@@ -272,8 +272,8 @@ def get_admin_stats(
 ):
     """Get dashboard statistics for admin."""
     total_users = db.query(User).count()
-    students = db.query(User).filter(User.role == UserRole.STUDENT).count()
-    admins = db.query(User).filter(User.role == UserRole.ADMIN).count()
+    students = db.query(User).filter(User.role == UserRole.STUDENT.value).count()
+    admins = db.query(User).filter(User.role == UserRole.ADMIN.value).count()
     pending_approvals = db.query(ApprovalRequest).filter(
         ApprovalRequest.status == ApprovalStatus.PENDING
     ).count()

@@ -71,7 +71,7 @@ def get_events(
     query = db.query(Event)
     
     # Only admins can see deleted events
-    if not include_deleted or current_user.role != UserRole.ADMIN:
+    if not include_deleted or current_user.role != UserRole.ADMIN.value:
         query = query.filter(Event.is_deleted == False)
     
     events = query.order_by(Event.scheduled_at.desc()).all()
@@ -89,7 +89,7 @@ def get_events(
         }
         
         # Add attendance info based on role
-        if current_user.role == UserRole.STUDENT:
+        if current_user.role == UserRole.STUDENT.value:
             # Check if user attended this event
             attendance = db.query(AttendanceRecord).filter(
                 AttendanceRecord.user_id == current_user.id,
@@ -97,7 +97,7 @@ def get_events(
             ).first()
             event_data["user_attended"] = attendance is not None
             
-        elif current_user.role == UserRole.ADMIN:
+        elif current_user.role == UserRole.ADMIN.value:
             # Show attendance count for admins
             attendance_count = db.query(AttendanceRecord).filter(
                 AttendanceRecord.event_id == event.id
@@ -130,13 +130,13 @@ def get_event(
     }
     
     # Add attendance status
-    if current_user.role == UserRole.STUDENT:
+    if current_user.role == UserRole.STUDENT.value:
         attendance = db.query(AttendanceRecord).filter(
             AttendanceRecord.user_id == current_user.id,
             AttendanceRecord.event_id == event.id
         ).first()
         event_data["user_attended"] = attendance is not None
-    elif current_user.role == UserRole.ADMIN:
+    elif current_user.role == UserRole.ADMIN.value:
         attendance_count = db.query(AttendanceRecord).filter(
             AttendanceRecord.event_id == event.id
         ).count()

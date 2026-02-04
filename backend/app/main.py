@@ -54,7 +54,7 @@ def startup_event():
                 email=settings.ADMIN_EMAIL,
                 full_name="Admin",
                 hashed_password=get_password_hash(settings.ADMIN_PASSWORD),
-                role=UserRole.ADMIN,
+                role=UserRole.ADMIN.value,
                 is_active=True
             )
             db.add(admin)

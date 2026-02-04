@@ -37,7 +37,7 @@ class NotificationService:
     def notify_admins_new_signup(db: Session, user_id: str, user_email: str, user_name: str, approval_request_id: str):
         """Notify all active admins about a new signup request."""
         admins = db.query(User).filter(
-            User.role == UserRole.ADMIN,
+            User.role == UserRole.ADMIN.value,
             User.is_active == True
         ).all()
         
@@ -92,7 +92,7 @@ class NotificationService:
     def notify_admins_attendance_update(db: Session, event_id: str, event_title: str, user_name: str, attendance_count: int):
         """Notify admins when someone marks attendance."""
         admins = db.query(User).filter(
-            User.role == UserRole.ADMIN,
+            User.role == UserRole.ADMIN.value,
             User.is_active == True
         ).all()
         

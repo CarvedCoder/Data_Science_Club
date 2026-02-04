@@ -1,5 +1,5 @@
 
-from sqlalchemy import Column, String, Boolean, DateTime, Enum, Index, Text
+from sqlalchemy import Column, String, Boolean, DateTime, Index, Text
 from sqlalchemy.orm import relationship
 from datetime import datetime
 import enum
@@ -17,7 +17,7 @@ class User(Base):
     email = Column(String(255), unique=True, nullable=False)
     full_name = Column(String(255), nullable=False)
     hashed_password = Column(String(255), nullable=False)
-    role = Column(Enum(UserRole), nullable=True)  # NULL until approved
+    role = Column(String(20), nullable=True)  # 'student' or 'admin', NULL until approved
     is_active = Column(Boolean, default=False, nullable=False)  # False until approved
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
