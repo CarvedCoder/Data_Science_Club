@@ -33,8 +33,6 @@ export const Dashboard = () => {
       setRecentEvents(eventsRes.data.slice(0, 5));
     } catch (error) {
       console.error('Failed to load dashboard data:', error);
-      // Set default stats for demo
-      setStats({ total_events: 12, attended: 10, percentage: 83 });
     } finally {
       setLoading(false);
     }

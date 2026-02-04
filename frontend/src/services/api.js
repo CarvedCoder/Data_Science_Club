@@ -116,11 +116,13 @@ export const events = {
   }),
   update: (id, data) => api.put(`/events/${id}`, data),
   delete: (id) => api.delete(`/events/${id}`),
+  markComplete: (id) => api.put(`/events/${id}`, { status: 'completed' }),
+  markScheduled: (id) => api.put(`/events/${id}`, { status: 'scheduled' }),
 };
 
 export const attendance = {
   // Admin QR management
-  startSession: (eventId) => api.post('/attendance/start-session', { event_id: eventId }),
+  startSession: (eventId) => api.post('/attendance/start-session', { event_id: String(eventId) }),
   stopSession: (sessionId) => api.post(`/attendance/stop-session/${sessionId}`),
   refreshQR: (sessionId) => api.post(`/attendance/refresh-qr/${sessionId}`),
   getActiveSession: () => api.get('/attendance/active-session'),

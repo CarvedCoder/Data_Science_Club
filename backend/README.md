@@ -15,9 +15,11 @@ A secure, production-grade backend system for managing Data Science Club operati
 
 ## 🏗️ Architecture
 
-### Database Schema
+### Database
 
-**Core Tables:**
+**PostgreSQL (Supabase)** - Production-grade cloud database
+
+### Core Tables
 - `users` - User accounts with role-based access
 - `approval_requests` - Signup approval workflow (3-minute timeout)
 - `events` - Class sessions and events
@@ -45,13 +47,26 @@ Attendance Marked →
 Real-time Admin Notification
 ```
 
-## 🚀 Setup
+## 🚀 Quick Start
 
 ### Prerequisites
-- Python 3.8+
-- SQLite 3 (or PostgreSQL for production)
+- Python 3.11+
+- Docker (recommended)
+- Supabase project
 
-### Installation
+### Docker Deployment (Recommended)
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for full deployment instructions.
+
+```bash
+# Build
+docker build -t ds-club-backend .
+
+# Run
+docker run -d -p 8000:8000 --env-file .env ds-club-backend
+```
+
+### Local Development
 
 1. **Create virtual environment:**
 ```bash
@@ -508,28 +523,8 @@ All high-traffic queries are optimized with indexes:
 ## 📚 Documentation
 
 - **API Documentation:** `http://localhost:8000/docs` (Swagger UI)
-- **Implementation Guide:** `../IMPLEMENTATION_GUIDE.md`
 - **Database Schema:** `schema.sql`
 - **Audit Log Reference:** See documentation in audit_service.py
-
-## 🔄 Migration from Old System
-
-If migrating from the old system:
-
-1. **Backup existing database:**
-```bash
-cp ds_club.db ds_club.db.backup
-```
-
-2. **Run migration script:**
-```bash
-python migrate_database.py
-```
-
-3. **Verify data integrity:**
-```bash
-python verify_migration.py
-```
 
 ## 🤝 Contributing
 
@@ -552,9 +547,9 @@ This project is part of the DS Club Portal system.
 ## 👥 Support
 
 For technical support or security issues:
+
 - Create an issue in the repository
 - Contact the development team
-- Review the IMPLEMENTATION_GUIDE.md
 
 ---
 

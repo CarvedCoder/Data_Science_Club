@@ -1,5 +1,5 @@
 
-from sqlalchemy import Column, String, Boolean, DateTime, Enum, Index, CheckConstraint, Text
+from sqlalchemy import Column, String, Boolean, DateTime, Enum, Index, Text
 from sqlalchemy.orm import relationship
 from datetime import datetime
 import enum
@@ -46,5 +46,4 @@ class User(Base):
     __table_args__ = (
         Index('idx_users_email', 'email'),
         Index('idx_users_role_active', 'role', 'is_active'),
-        CheckConstraint("email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$'", name='valid_email'),
     )

@@ -58,8 +58,25 @@ def get_materials(
     if event_id:
         query = query.filter(StudyMaterial.event_id == event_id)
     
-    materials = query.all()
-    return materials
+    materials = query.order_by(StudyMaterial.uploaded_at.desc()).all()
+    
+    # Serialize materials with uploader info
+    result = []
+    for m in materials:
+        uploader = db.query(User).filter(User.id == m.uploaded_by).first()
+        result.append({
+            "id": m.id,
+            "title": m.title,
+            "description": m.description,
+            "file_name": m.file_name,
+            "file_path": m.file_path,
+            "event_id": m.event_id,
+            "uploaded_by": m.uploaded_by,
+            "uploaded_by_name": uploader.full_name if uploader else "Unknown",
+            "uploaded_at": m.uploaded_at.isoformat() if m.uploaded_at else None
+        })
+    
+    return result
 
 @router.delete("/{material_id}")
 def delete_material(

@@ -1,6 +1,5 @@
 
 from sqlalchemy import Column, String, DateTime, Text, Index
-from sqlalchemy.dialects.postgresql import JSONB, INET
 from datetime import datetime
 import uuid
 from ..database import Base
@@ -13,7 +12,7 @@ class AuditLog(Base):
     action = Column(String(50), nullable=False)  # e.g., 'signup', 'login', 'attendance_marked'
     resource_type = Column(String(50), nullable=True)  # e.g., 'event', 'user', 'approval'
     resource_id = Column(String, nullable=True)
-    meta_data = Column(Text, nullable=True)  # JSON string for SQLite compatibility (renamed from 'metadata' to avoid SQLAlchemy conflict)
+    meta_data = Column(Text, nullable=True)  # JSON string (renamed from 'metadata' to avoid SQLAlchemy conflict)
     ip_address = Column(String, nullable=True)
     user_agent = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False, index=True)

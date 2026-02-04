@@ -1,9 +1,16 @@
 
-from sqlalchemy import Column, String, DateTime, Text, Boolean, ForeignKey, Index
+from sqlalchemy import Column, String, DateTime, Text, Boolean, ForeignKey, Index, Enum
 from sqlalchemy.orm import relationship
 from datetime import datetime
 import uuid
+import enum
 from ..database import Base
+
+class EventStatus(enum.Enum):
+    SCHEDULED = "scheduled"
+    ACTIVE = "active"
+    COMPLETED = "completed"
+    CANCELLED = "cancelled"
 
 class Event(Base):
     __tablename__ = "events"
@@ -12,6 +19,7 @@ class Event(Base):
     title = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
     scheduled_at = Column(DateTime, nullable=False)
+    status = Column(String(20), default="scheduled", nullable=False)  # scheduled, active, completed, cancelled
     created_by = Column(String, ForeignKey("users.id"), nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)

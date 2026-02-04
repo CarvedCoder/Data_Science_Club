@@ -1,0 +1,76 @@
+# =============================================================================
+# Docker Compose - Local Development
+# DS Club Portal Backend
+# =============================================================================
+# 
+# Usage:
+#   docker-compose up --build        # Build and start
+#   docker-compose up -d             # Start in background
+#   docker-compose logs -f backend   # View logs
+#   docker-compose down              # Stop and remove containers
+#
+# =============================================================================
+
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ds-club-backend
+    ports:
+      - "${PORT:-8000}:8000"
+    environment:
+      # Database - Supabase PostgreSQL
+      - DATABASE_URL=${DATABASE_URL}
+      - DATABASE_POOL_SIZE=${DATABASE_POOL_SIZE:-10}
+      - DATABASE_MAX_OVERFLOW=${DATABASE_MAX_OVERFLOW:-5}
+      
+      # JWT Authentication
+      - SECRET_KEY=${SECRET_KEY}
+      - ALGORITHM=${ALGORITHM:-HS256}
+      - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES:-15}
+      - REFRESH_TOKEN_EXPIRE_DAYS=${REFRESH_TOKEN_EXPIRE_DAYS:-7}
+      
+      # QR Security
+      - QR_SIGNING_SECRET=${QR_SIGNING_SECRET}
+      - QR_EXPIRY_SECONDS=${QR_EXPIRY_SECONDS:-60}
+      
+      # Admin Credentials
+      - ADMIN_EMAIL=${ADMIN_EMAIL}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      
+      # Approval Workflow
+      - APPROVAL_TIMEOUT_MINUTES=${APPROVAL_TIMEOUT_MINUTES:-3}
+      
+      # Security
+      - BCRYPT_ROUNDS=${BCRYPT_ROUNDS:-12}
+      - RATE_LIMIT_ENABLED=${RATE_LIMIT_ENABLED:-true}
+      - RATE_LIMIT_PER_MINUTE=${RATE_LIMIT_PER_MINUTE:-60}
+      
+      # CORS
+      - CORS_ORIGINS=${CORS_ORIGINS:-*}
+      
+      # Logging
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      
+      # Port
+      - PORT=8000
+    volumes:
+      # Persist uploads
+      - ./uploads:/app/uploads
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
+# =============================================================================
+# Networks (optional - for multi-container setups)
+# =============================================================================
+networks:
+  default:
+    name: ds-club-network

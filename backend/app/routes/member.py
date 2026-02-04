@@ -38,8 +38,8 @@ class ProfileResponse(BaseModel):
 
 
 class AttendanceHistoryItem(BaseModel):
-    id: int
-    event_id: int
+    id: str
+    event_id: str
     event_title: str
     event_date: str
     event_type: Optional[str] = None
@@ -51,7 +51,7 @@ class AttendanceHistoryItem(BaseModel):
 
 
 class EventItem(BaseModel):
-    id: int
+    id: str
     title: str
     description: Optional[str] = None
     date: str
@@ -154,15 +154,15 @@ def get_member_events(
     db: Session = Depends(get_db)
 ):
     """Get all events for the current member"""
-    events = db.query(Event).order_by(Event.date.desc()).all()
+    events = db.query(Event).filter(Event.is_deleted == False).order_by(Event.scheduled_at.desc()).all()
     
     return [
         EventItem(
             id=event.id,
             title=event.title,
             description=event.description,
-            date=str(event.date) if event.date else '',
-            time=str(event.time) if hasattr(event, 'time') and event.time else None,
+            date=str(event.scheduled_at) if event.scheduled_at else '',
+            time=None,
             location=getattr(event, 'location', None),
             event_type=getattr(event, 'event_type', 'Other')
         )
@@ -190,25 +190,25 @@ def get_attendance_history(
                 id=record.id,
                 event_id=event.id,
                 event_title=event.title,
-                event_date=str(event.date) if event.date else '',
+                event_date=str(event.scheduled_at) if event.scheduled_at else '',
                 event_type=getattr(event, 'event_type', 'Other'),
-                check_in_time=str(record.check_in_time) if record.check_in_time else None,
+                check_in_time=str(record.marked_at) if record.marked_at else None,
                 status='present'
             ))
     
     # Also get events where user was absent (no attendance record)
-    all_events = db.query(Event).all()
+    all_events = db.query(Event).filter(Event.is_deleted == False).all()
     attended_event_ids = {r.event_id for r in records}
     
     for event in all_events:
         if event.id not in attended_event_ids:
-            # Check if event has passed (basic check using date)
-            if event.date and event.date < datetime.now().date():
+            # Check if event has passed (basic check using scheduled_at)
+            if event.scheduled_at and event.scheduled_at < datetime.utcnow():
                 result.append(AttendanceHistoryItem(
-                    id=0,  # No record ID
+                    id="",  # No record ID for absent
                     event_id=event.id,
                     event_title=event.title,
-                    event_date=str(event.date),
+                    event_date=str(event.scheduled_at),
                     event_type=getattr(event, 'event_type', 'Other'),
                     check_in_time=None,
                     status='absent'

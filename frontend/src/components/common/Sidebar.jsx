@@ -20,6 +20,7 @@ export const Sidebar = () => {
     { to: '/admin/events', icon: Calendar, label: 'Events' },
     { to: '/admin/members', icon: Users, label: 'Members' },
     { to: '/admin/pending', icon: Bell, label: 'Pending Requests' },
+    { to: '/admin/resources', icon: BookOpen, label: 'Resources' },
     { to: '/admin/settings', icon: Settings, label: 'Settings' },
   ];
 

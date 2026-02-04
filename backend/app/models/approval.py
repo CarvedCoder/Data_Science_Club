@@ -1,6 +1,5 @@
 
 from sqlalchemy import Column, String, DateTime, ForeignKey, Text, Enum, CheckConstraint
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from datetime import datetime, timedelta
 import enum

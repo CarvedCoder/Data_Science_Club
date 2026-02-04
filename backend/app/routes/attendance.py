@@ -72,27 +72,41 @@ def stop_attendance_session(
 @router.post("/refresh-qr/{session_id}")
 def refresh_qr_code(
     session_id: str,
+    request: Request,
     db: Session = Depends(get_db),
     current_user: User = Depends(require_admin)
 ):
     """
-    Generate a new QR payload for an existing session.
-    This refreshes the QR code without creating a new session.
+    Generate a new QR code for an existing session (admin only).
+    This creates a new QR session for the same event with a fresh expiry.
     """
-    session = db.query(QRSession).filter(
-        QRSession.id == session_id,
-        QRSession.is_revoked == False
-    ).first()
+    # Get the existing session to find the event
+    old_session = db.query(QRSession).filter(QRSession.id == session_id).first()
     
-    if not session:
-        raise HTTPException(status_code=404, detail="Session not found or revoked")
+    if not old_session:
+        raise HTTPException(status_code=404, detail="Session not found")
     
-    # Generate new QR data for the same event
-    qr_data = QRService.create_qr_session(db, session.event_id, current_user.id)
+    # Revoke old session
+    QRService.revoke_session(db, session_id)
+    
+    # Get event info
+    event = db.query(Event).filter(Event.id == old_session.event_id).first()
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    
+    # Generate new QR session
+    qr_data = QRService.create_qr_session(db, old_session.event_id, current_user.id)
+    
+    # Log audit event
+    AuditService.log_qr_generated(
+        db, current_user.id, old_session.event_id, qr_data['session_id'], request
+    )
     
     return {
         "session_id": qr_data['session_id'],
         "qr_payload": qr_data['qr_payload'],
+        "event_id": old_session.event_id,
+        "event_title": event.title,
         "expires_at": qr_data['expires_at'].isoformat(),
         "expires_in_seconds": qr_data['expires_in_seconds']
     }

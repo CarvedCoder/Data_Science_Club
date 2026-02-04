@@ -24,6 +24,7 @@ class EventUpdate(BaseModel):
     description: Optional[str] = None
     scheduled_at: Optional[datetime] = None
     notes: Optional[str] = None
+    status: Optional[str] = None  # scheduled, active, completed, cancelled
 
 @router.post("/")
 def create_event(
@@ -83,6 +84,7 @@ def get_events(
             "description": event.description,
             "scheduled_at": event.scheduled_at,
             "notes": event.notes,
+            "status": event.status or "scheduled",
             "is_deleted": event.is_deleted
         }
         
@@ -122,6 +124,7 @@ def get_event(
         "description": event.description,
         "scheduled_at": event.scheduled_at,
         "notes": event.notes,
+        "status": event.status or "scheduled",
         "is_deleted": event.is_deleted,
         "created_by": event.created_by
     }
@@ -164,6 +167,7 @@ def update_event(
         "description": event.description,
         "scheduled_at": event.scheduled_at,
         "notes": event.notes,
+        "status": event.status,
         "is_deleted": event.is_deleted
     }
 

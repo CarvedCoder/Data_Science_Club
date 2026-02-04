@@ -30,21 +30,21 @@ export const AttendanceHistory = () => {
   const fetchAttendanceHistory = async () => {
     try {
       setLoading(true);
-      const response = await attendance.getHistory();
-      setRecords(response.data || []);
+      const response = await attendance.getMyAttendance();
+      // Transform API response to match component's expected format
+      const attendanceData = response.data?.attendance || [];
+      const formattedRecords = attendanceData.map((record, index) => ({
+        id: index + 1,
+        event_title: record.event?.title || 'Unknown Event',
+        event_date: record.event?.scheduled_at || record.marked_at,
+        check_in_time: record.marked_at ? new Date(record.marked_at).toLocaleTimeString('en-US', { hour12: false }) : null,
+        status: 'present', // All records from my-attendance are attended events
+        event_type: record.event?.type || 'Other'
+      }));
+      setRecords(formattedRecords);
     } catch (err) {
       console.error('Error fetching attendance history:', err);
       setError('Failed to load attendance history');
-      // Use mock data for demonstration
-      setRecords([
-        { id: 1, event_title: 'Machine Learning Workshop', event_date: '2025-01-15', check_in_time: '10:05:23', status: 'present', event_type: 'Workshop' },
-        { id: 2, event_title: 'Python for Data Science', event_date: '2025-01-12', check_in_time: '14:30:00', status: 'present', event_type: 'Lecture' },
-        { id: 3, event_title: 'Neural Networks Deep Dive', event_date: '2025-01-10', check_in_time: null, status: 'absent', event_type: 'Workshop' },
-        { id: 4, event_title: 'Data Visualization with D3.js', event_date: '2025-01-08', check_in_time: '09:15:45', status: 'present', event_type: 'Lecture' },
-        { id: 5, event_title: 'Hackathon Kickoff', event_date: '2025-01-05', check_in_time: '08:00:12', status: 'present', event_type: 'Hackathon' },
-        { id: 6, event_title: 'Statistics Fundamentals', event_date: '2025-01-03', check_in_time: '11:45:30', status: 'present', event_type: 'Lecture' },
-        { id: 7, event_title: 'Club General Meeting', event_date: '2025-01-01', check_in_time: null, status: 'absent', event_type: 'Meetup' },
-      ]);
     } finally {
       setLoading(false);
     }

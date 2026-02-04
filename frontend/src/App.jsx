@@ -16,6 +16,7 @@ import { PendingRequests } from './components/admin/PendingRequests';
 import { MemberManagement } from './components/admin/MemberManagement';
 import { EventManagement } from './components/admin/EventManagement';
 import { QRAttendance } from './components/admin/QRAttendance';
+import { ResourceManagement } from './components/admin/ResourceManagement';
 
 const PrivateRoute = ({ children, requiredRole }) => {
   const { user, loading, approvalStatus } = useAuth();
@@ -69,6 +70,7 @@ function App() {
           <Route path="/admin/events" element={<PrivateRoute requiredRole="admin"><EventManagement /></PrivateRoute>} />
           <Route path="/admin/members" element={<PrivateRoute requiredRole="admin"><MemberManagement /></PrivateRoute>} />
           <Route path="/admin/pending" element={<PrivateRoute requiredRole="admin"><PendingRequests /></PrivateRoute>} />
+          <Route path="/admin/resources" element={<PrivateRoute requiredRole="admin"><ResourceManagement /></PrivateRoute>} />
           <Route path="/admin/qr/:eventId" element={<PrivateRoute requiredRole="admin"><QRAttendance /></PrivateRoute>} />
           <Route path="/admin/settings" element={<PrivateRoute requiredRole="admin"><div className="p-8">Settings (Coming Soon)</div></PrivateRoute>} />
           
