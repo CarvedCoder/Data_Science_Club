@@ -160,9 +160,9 @@ def login(
     user.last_login_at = datetime.utcnow()
     db.commit()
     
-    # Generate tokens
-    access_token = create_access_token(data={"sub": user.id})
-    refresh_token = create_refresh_token(data={"sub": user.id})
+    # Generate tokens (convert UUID to string for JWT)
+    access_token = create_access_token(data={"sub": str(user.id)})
+    refresh_token = create_refresh_token(data={"sub": str(user.id)})
     
     # Log login
     AuditService.log_login(db, user.id, user.email, True, req)
@@ -206,9 +206,9 @@ def refresh_token(
             headers={"WWW-Authenticate": "Bearer"},
         )
     
-    # Generate new tokens
-    access_token = create_access_token(data={"sub": user.id})
-    new_refresh_token = create_refresh_token(data={"sub": user.id})
+    # Generate new tokens (convert UUID to string for JWT)
+    access_token = create_access_token(data={"sub": str(user.id)})
+    new_refresh_token = create_refresh_token(data={"sub": str(user.id)})
     
     return {
         "access_token": access_token,
