@@ -1,7 +1,7 @@
 
 from sqlalchemy import Column, String, DateTime, ForeignKey, Text, CheckConstraint
 from sqlalchemy.orm import relationship
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import enum
 import uuid
 from ..database import Base
@@ -37,11 +37,15 @@ class ApprovalRequest(Base):
     
     @property
     def is_expired(self):
-        return self.status == ApprovalStatus.PENDING.value and datetime.utcnow() > self.expires_at
+        now = datetime.now(timezone.utc)
+        expires = self.expires_at if self.expires_at.tzinfo else self.expires_at.replace(tzinfo=timezone.utc)
+        return self.status == ApprovalStatus.PENDING.value and now > expires
     
     @property
     def time_remaining_seconds(self):
         if self.status != ApprovalStatus.PENDING.value:
             return 0
-        remaining = (self.expires_at - datetime.utcnow()).total_seconds()
+        now = datetime.now(timezone.utc)
+        expires = self.expires_at if self.expires_at.tzinfo else self.expires_at.replace(tzinfo=timezone.utc)
+        remaining = (expires - now).total_seconds()
         return max(0, int(remaining))
