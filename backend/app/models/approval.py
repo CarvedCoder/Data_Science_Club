@@ -1,5 +1,5 @@
 
-from sqlalchemy import Column, String, DateTime, ForeignKey, Text, Enum, CheckConstraint
+from sqlalchemy import Column, String, DateTime, ForeignKey, Text, CheckConstraint
 from sqlalchemy.orm import relationship
 from datetime import datetime, timedelta
 import enum
@@ -17,7 +17,7 @@ class ApprovalRequest(Base):
     
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     user_id = Column(String, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    status = Column(Enum(ApprovalStatus), default=ApprovalStatus.PENDING)
+    status = Column(String(20), default=ApprovalStatus.PENDING.value)  # Use String instead of Enum for PostgreSQL
     requested_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     expires_at = Column(DateTime, nullable=False)
     decided_at = Column(DateTime, nullable=True)
@@ -37,11 +37,11 @@ class ApprovalRequest(Base):
     
     @property
     def is_expired(self):
-        return self.status == ApprovalStatus.PENDING and datetime.utcnow() > self.expires_at
+        return self.status == ApprovalStatus.PENDING.value and datetime.utcnow() > self.expires_at
     
     @property
     def time_remaining_seconds(self):
-        if self.status != ApprovalStatus.PENDING:
+        if self.status != ApprovalStatus.PENDING.value:
             return 0
         remaining = (self.expires_at - datetime.utcnow()).total_seconds()
         return max(0, int(remaining))

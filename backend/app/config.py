@@ -38,6 +38,10 @@ class Settings(BaseSettings):
     # Security
     BCRYPT_ROUNDS: int = 12  # Password hashing cost factor
     
+    # Server
+    CORS_ORIGINS: str = "*"
+    PORT: int = 8000
+    
     class Config:
         env_file = ".env"
 

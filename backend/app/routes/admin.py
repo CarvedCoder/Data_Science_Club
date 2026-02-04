@@ -57,7 +57,7 @@ def get_approval_requests(
             "status": req.status,
             "requested_at": req.requested_at.isoformat(),
             "expires_at": req.expires_at.isoformat(),
-            "time_remaining_seconds": req.time_remaining_seconds if req.status == ApprovalStatus.PENDING else 0,
+            "time_remaining_seconds": req.time_remaining_seconds if req.status == ApprovalStatus.PENDING.value else 0,
             "decided_at": req.decided_at.isoformat() if req.decided_at else None,
             "approved_role": req.approved_role,
             "rejection_reason": req.rejection_reason
@@ -89,7 +89,7 @@ def decide_approval(
     if not approval_req:
         raise HTTPException(status_code=404, detail="Approval request not found")
     
-    if approval_req.status != ApprovalStatus.PENDING:
+    if approval_req.status != ApprovalStatus.PENDING.value:
         raise HTTPException(
             status_code=409,
             detail=f"Request already {approval_req.status}"
@@ -97,7 +97,7 @@ def decide_approval(
     
     # Check if expired
     if approval_req.is_expired:
-        approval_req.status = ApprovalStatus.TIMEOUT
+        approval_req.status = ApprovalStatus.TIMEOUT.value
         approval_req.decided_at = datetime.utcnow()
         db.commit()
         raise HTTPException(
@@ -120,7 +120,7 @@ def decide_approval(
             )
         
         # Update approval request
-        approval_req.status = ApprovalStatus.APPROVED
+        approval_req.status = ApprovalStatus.APPROVED.value
         approval_req.decided_at = datetime.utcnow()
         approval_req.decided_by = current_user.id
         approval_req.approved_role = decision.approved_role  # Already lowercase
@@ -156,7 +156,7 @@ def decide_approval(
         
     elif decision.decision == 'rejected':
         # Update approval request
-        approval_req.status = ApprovalStatus.REJECTED
+        approval_req.status = ApprovalStatus.REJECTED.value
         approval_req.decided_at = datetime.utcnow()
         approval_req.decided_by = current_user.id
         approval_req.rejection_reason = decision.rejection_reason
@@ -275,7 +275,7 @@ def get_admin_stats(
     students = db.query(User).filter(User.role == UserRole.STUDENT.value).count()
     admins = db.query(User).filter(User.role == UserRole.ADMIN.value).count()
     pending_approvals = db.query(ApprovalRequest).filter(
-        ApprovalRequest.status == ApprovalStatus.PENDING
+        ApprovalRequest.status == ApprovalStatus.PENDING.value
     ).count()
     inactive_users = db.query(User).filter(User.is_active == False).count()
     

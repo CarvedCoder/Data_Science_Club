@@ -71,7 +71,7 @@ def signup(request: SignupRequest, req: Request, db: Session = Depends(get_db)):
     # Create approval request with 3-minute timeout
     approval_request = ApprovalRequest(
         user_id=user.id,
-        status=ApprovalStatus.PENDING,
+        status=ApprovalStatus.PENDING.value,
         requested_at=datetime.utcnow(),
         expires_at=datetime.utcnow() + timedelta(minutes=settings.APPROVAL_TIMEOUT_MINUTES)
     )
@@ -113,13 +113,13 @@ def login(
         # Check if there's a pending approval request
         pending_approval = db.query(ApprovalRequest).filter(
             ApprovalRequest.user_id == user.id,
-            ApprovalRequest.status == ApprovalStatus.PENDING
+            ApprovalRequest.status == ApprovalStatus.PENDING.value
         ).first()
         
         if pending_approval:
             if pending_approval.is_expired:
                 # Mark as timed out
-                pending_approval.status = ApprovalStatus.TIMEOUT
+                pending_approval.status = ApprovalStatus.TIMEOUT.value
                 pending_approval.decided_at = datetime.utcnow()
                 db.commit()
                 raise HTTPException(
@@ -136,7 +136,7 @@ def login(
         # Check if approval was rejected
         rejected_approval = db.query(ApprovalRequest).filter(
             ApprovalRequest.user_id == user.id,
-            ApprovalRequest.status == ApprovalStatus.REJECTED
+            ApprovalRequest.status == ApprovalStatus.REJECTED.value
         ).order_by(ApprovalRequest.requested_at.desc()).first()
         
         if rejected_approval:
@@ -238,7 +238,7 @@ def get_me(current_user: User = Depends(get_current_user), db: Session = Depends
             approval_info = {
                 "status": approval.status,
                 "requested_at": approval.requested_at.isoformat(),
-                "time_remaining_seconds": approval.time_remaining_seconds if approval.status == ApprovalStatus.PENDING else 0,
+                "time_remaining_seconds": approval.time_remaining_seconds if approval.status == ApprovalStatus.PENDING.value else 0,
                 "decided_at": approval.decided_at.isoformat() if approval.decided_at else None,
                 "rejection_reason": approval.rejection_reason
             }
