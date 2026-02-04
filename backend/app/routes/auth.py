@@ -15,6 +15,7 @@ from ..utils.security import (
     validate_password_strength,
     validate_email
 )
+from ..utils import utc_now
 from ..middleware.auth_middleware import get_current_user
 from ..services.audit_service import AuditService
 from ..services.notification_service import NotificationService
@@ -72,8 +73,8 @@ def signup(request: SignupRequest, req: Request, db: Session = Depends(get_db)):
     approval_request = ApprovalRequest(
         user_id=user.id,
         status=ApprovalStatus.PENDING.value,
-        requested_at=datetime.utcnow(),
-        expires_at=datetime.utcnow() + timedelta(minutes=settings.APPROVAL_TIMEOUT_MINUTES)
+        requested_at=utc_now(),
+        expires_at=utc_now() + timedelta(minutes=settings.APPROVAL_TIMEOUT_MINUTES)
     )
     db.add(approval_request)
     db.commit()
@@ -120,7 +121,7 @@ def login(
             if pending_approval.is_expired:
                 # Mark as timed out
                 pending_approval.status = ApprovalStatus.TIMEOUT.value
-                pending_approval.decided_at = datetime.utcnow()
+                pending_approval.decided_at = utc_now()
                 db.commit()
                 raise HTTPException(
                     status_code=403,
@@ -157,7 +158,7 @@ def login(
         )
     
     # Update last login
-    user.last_login_at = datetime.utcnow()
+    user.last_login_at = utc_now()
     db.commit()
     
     # Generate tokens (convert UUID to string for JWT)

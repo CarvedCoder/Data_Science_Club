@@ -3,6 +3,7 @@ from datetime import datetime
 from sqlalchemy.orm import Session
 from ..models.notification import Notification
 from ..models.user import User, UserRole
+from ..utils import utc_now
 
 def serialize_for_json(obj):
     """Convert UUIDs and other non-serializable objects to strings."""
@@ -34,7 +35,7 @@ class NotificationService:
             message=message,
             notification_data=json.dumps(serialize_for_json(data)) if data else None,
             is_read=False,
-            created_at=datetime.utcnow()
+            created_at=utc_now()
         )
         
         db.add(notification)
@@ -131,7 +132,7 @@ class NotificationService:
         
         if notification and not notification.is_read:
             notification.is_read = True
-            notification.read_at = datetime.utcnow()
+            notification.read_at = utc_now()
             db.commit()
     
     @staticmethod

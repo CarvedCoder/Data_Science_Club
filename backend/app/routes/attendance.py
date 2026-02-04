@@ -13,6 +13,7 @@ from ..middleware.auth_middleware import get_current_user, require_admin, requir
 from ..services.qr_service import QRService
 from ..services.audit_service import AuditService
 from ..services.notification_service import NotificationService
+from ..utils import utc_now, ensure_utc
 
 router = APIRouter(prefix="/api/attendance", tags=["attendance"])
 
@@ -122,7 +123,7 @@ def get_active_session(
     """
     session = db.query(QRSession).filter(
         QRSession.is_revoked == False,
-        QRSession.expires_at > datetime.utcnow()
+        QRSession.expires_at > utc_now()
     ).order_by(QRSession.created_at.desc()).first()
     
     if not session:
@@ -139,7 +140,7 @@ def get_active_session(
             "scheduled_at": event.scheduled_at.isoformat()
         },
         "expires_at": session.expires_at.isoformat(),
-        "expires_in_seconds": max(0, int((session.expires_at - datetime.utcnow()).total_seconds()))
+        "expires_in_seconds": max(0, int((ensure_utc(session.expires_at) - utc_now()).total_seconds()))
     }
 
 @router.post("/mark")
@@ -205,7 +206,7 @@ def mark_attendance(
             )
         
         # Step 4: Double-check expiry from database
-        if qr_session.expires_at < datetime.utcnow():
+        if qr_session.expires_at < utc_now():
             AuditService.log_attendance_failed(
                 db, current_user.id, "qr_expired",
                 {"session_id": session_id}, request
@@ -262,7 +263,7 @@ def mark_attendance(
             event_id=event_id,
             user_id=current_user.id,
             qr_session_id=session_id,
-            marked_at=datetime.utcnow(),
+            marked_at=utc_now(),
             ip_address=ip_address,
             user_agent=user_agent
         )
@@ -272,7 +273,7 @@ def mark_attendance(
         used_nonce = UsedNonce(
             nonce=nonce,
             user_id=current_user.id,
-            used_at=datetime.utcnow()
+            used_at=utc_now()
         )
         db.add(used_nonce)
         

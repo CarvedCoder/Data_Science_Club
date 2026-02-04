@@ -9,6 +9,7 @@ from ..models.user import User
 from ..models.event import Event
 from ..models.attendance import AttendanceRecord
 from ..middleware.auth_middleware import get_current_user, require_active_member
+from ..utils import utc_now
 
 router = APIRouter(prefix="/api/member", tags=["member"])
 
@@ -203,7 +204,7 @@ def get_attendance_history(
     for event in all_events:
         if event.id not in attended_event_ids:
             # Check if event has passed (basic check using scheduled_at)
-            if event.scheduled_at and event.scheduled_at < datetime.utcnow():
+            if event.scheduled_at and event.scheduled_at < utc_now():
                 result.append(AttendanceHistoryItem(
                     id="",  # No record ID for absent
                     event_id=event.id,

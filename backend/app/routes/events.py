@@ -10,6 +10,7 @@ from ..models.attendance import AttendanceRecord
 from ..models.user import User, UserRole
 from ..middleware.auth_middleware import get_current_user, require_admin
 from ..services.audit_service import AuditService
+from ..utils import utc_now
 
 router = APIRouter(prefix="/api/events", tags=["events"])
 
@@ -190,7 +191,7 @@ def delete_event(
     
     # Soft delete
     event.is_deleted = True
-    event.deleted_at = datetime.utcnow()
+    event.deleted_at = utc_now()
     db.commit()
     
     # Log audit event

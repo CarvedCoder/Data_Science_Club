@@ -8,6 +8,7 @@ from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 from ..models.attendance import QRSession
 from ..config import get_settings
+from ..utils import utc_now
 
 class QRService:
     """
@@ -84,7 +85,7 @@ class QRService:
             payload = json.loads(payload_json)
             
             # Verify expiry
-            if payload.get('exp', 0) < int(datetime.utcnow().timestamp()):
+            if payload.get('exp', 0) < int(utc_now().timestamp()):
                 raise ValueError("QR code expired")
             
             return payload
@@ -111,7 +112,7 @@ class QRService:
         nonce = QRService.generate_nonce()
         
         # Calculate expiry
-        created_at = datetime.utcnow()
+        created_at = utc_now()
         expires_at = created_at + timedelta(seconds=settings.QR_EXPIRY_SECONDS)
         
         # Create session ID
@@ -158,5 +159,5 @@ class QRService:
         session = db.query(QRSession).filter(QRSession.id == session_id).first()
         if session:
             session.is_revoked = True
-            session.revoked_at = datetime.utcnow()
+            session.revoked_at = utc_now()
             db.commit()

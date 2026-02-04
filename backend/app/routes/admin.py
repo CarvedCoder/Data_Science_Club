@@ -13,6 +13,7 @@ from ..models.approval import ApprovalRequest, ApprovalStatus
 from ..middleware.auth_middleware import require_admin
 from ..services.audit_service import AuditService
 from ..services.notification_service import NotificationService
+from ..utils import utc_now
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 
@@ -36,7 +37,8 @@ def get_approval_requests(
     query = db.query(ApprovalRequest)
     
     if status_filter:
-        query = query.filter(ApprovalRequest.status == status_filter)
+        # Convert to lowercase for case-insensitive matching
+        query = query.filter(ApprovalRequest.status == status_filter.lower())
     
     total = query.count()
     requests = query.order_by(ApprovalRequest.requested_at.desc()).offset(
@@ -98,7 +100,7 @@ def decide_approval(
     # Check if expired
     if approval_req.is_expired:
         approval_req.status = ApprovalStatus.TIMEOUT.value
-        approval_req.decided_at = datetime.utcnow()
+        approval_req.decided_at = utc_now()
         db.commit()
         raise HTTPException(
             status_code=410,
@@ -121,7 +123,7 @@ def decide_approval(
         
         # Update approval request
         approval_req.status = ApprovalStatus.APPROVED.value
-        approval_req.decided_at = datetime.utcnow()
+        approval_req.decided_at = utc_now()
         approval_req.decided_by = current_user.id
         approval_req.approved_role = decision.approved_role  # Already lowercase
         
@@ -157,7 +159,7 @@ def decide_approval(
     elif decision.decision == 'rejected':
         # Update approval request
         approval_req.status = ApprovalStatus.REJECTED.value
-        approval_req.decided_at = datetime.utcnow()
+        approval_req.decided_at = utc_now()
         approval_req.decided_by = current_user.id
         approval_req.rejection_reason = decision.rejection_reason
         
@@ -281,11 +283,11 @@ def get_admin_stats(
     
     total_events = db.query(Event).count()
     upcoming_events = db.query(Event).filter(
-        Event.scheduled_at > datetime.utcnow(),
+        Event.scheduled_at > utc_now(),
         Event.is_deleted == False
     ).count()
     past_events = db.query(Event).filter(
-        Event.scheduled_at <= datetime.utcnow(),
+        Event.scheduled_at <= utc_now(),
         Event.is_deleted == False
     ).count()
     

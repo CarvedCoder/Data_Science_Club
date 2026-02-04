@@ -1,7 +1,7 @@
 
 from sqlalchemy import Column, String, DateTime, Boolean, ForeignKey, Index, UniqueConstraint, CheckConstraint
 from sqlalchemy.orm import relationship
-from datetime import datetime
+from datetime import datetime, timezone
 import uuid
 from ..database import Base
 
@@ -37,7 +37,9 @@ class QRSession(Base):
     
     @property
     def is_expired(self):
-        return datetime.utcnow() > self.expires_at
+        now = datetime.now(timezone.utc)
+        expires = self.expires_at if self.expires_at.tzinfo else self.expires_at.replace(tzinfo=timezone.utc)
+        return now > expires
     
     @property
     def is_valid(self):

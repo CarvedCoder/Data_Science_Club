@@ -3,6 +3,7 @@ from datetime import datetime
 from sqlalchemy.orm import Session
 from fastapi import Request
 from ..models.audit_log import AuditLog
+from ..utils import utc_now
 
 def serialize_for_json(obj):
     """Convert UUIDs and other non-serializable objects to strings."""
@@ -55,7 +56,7 @@ class AuditService:
                 meta_data=json.dumps(serialize_for_json(metadata)) if metadata else None,
                 ip_address=ip_address,
                 user_agent=user_agent,
-                created_at=datetime.utcnow()
+                created_at=utc_now()
             )
             
             db.add(audit_log)
