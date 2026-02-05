@@ -124,7 +124,7 @@ CREATE TRIGGER update_events_updated_at
 -- =============================================================================
 
 CREATE TABLE qr_sessions (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    id VARCHAR(64) PRIMARY KEY,  -- Cryptographically strong token (secrets.token_urlsafe)
     event_id UUID NOT NULL REFERENCES events(id),
     session_token VARCHAR(512) UNIQUE NOT NULL,
     token_signature VARCHAR(512) NOT NULL,
@@ -152,7 +152,7 @@ CREATE TABLE attendance_records (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     event_id UUID NOT NULL REFERENCES events(id),
     user_id UUID NOT NULL REFERENCES users(id),
-    qr_session_id UUID NOT NULL REFERENCES qr_sessions(id),
+    qr_session_id VARCHAR(64) NOT NULL REFERENCES qr_sessions(id),
     marked_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
     ip_address VARCHAR(45),  -- IPv6 compatible
     user_agent TEXT,

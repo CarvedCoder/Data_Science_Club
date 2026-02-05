@@ -116,8 +116,8 @@ class QRService:
         created_at = utc_now()
         expires_at = created_at + timedelta(seconds=settings.QR_EXPIRY_SECONDS)
         
-        # Create session ID (UUID for database compatibility)
-        session_id = str(uuid.uuid4())
+        # Create cryptographically strong session ID (URL-safe base64)
+        session_id = secrets.token_urlsafe(32)
         
         # Build payload
         payload = {
