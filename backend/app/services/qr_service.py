@@ -4,6 +4,7 @@ import hmac
 import hashlib
 import json
 import base64
+import uuid
 from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 from ..models.attendance import QRSession
@@ -115,8 +116,8 @@ class QRService:
         created_at = utc_now()
         expires_at = created_at + timedelta(seconds=settings.QR_EXPIRY_SECONDS)
         
-        # Create session ID
-        session_id = secrets.token_urlsafe(32)
+        # Create session ID (UUID for database compatibility)
+        session_id = str(uuid.uuid4())
         
         # Build payload
         payload = {
