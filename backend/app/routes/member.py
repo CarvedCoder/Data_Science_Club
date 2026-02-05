@@ -159,7 +159,7 @@ def get_member_events(
     
     return [
         EventItem(
-            id=event.id,
+            id=str(event.id),
             title=event.title,
             description=event.description,
             date=str(event.scheduled_at) if event.scheduled_at else '',
